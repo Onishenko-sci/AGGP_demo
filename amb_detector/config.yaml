@@ -1,0 +1,25 @@
+matching:
+  use_text_match: true
+  use_lemma_overlap: true
+  use_embedding: true
+  use_wordnet: true
+  use_manual: true
+  embedding_threshold_base: 0.7
+  embedding_threshold_length_factor: 0.05
+  synonym_threshold: 0.75
+
+weights:
+  text_match: 1.0
+  lemma_overlap: 0.8
+  embedding: 0.7
+  synonym_embedding: 0.6
+  manual: 0.9
+
+manual_synonyms:
+  cola: ["coke", "pepsi"]
+  soda: ["sprite", "coke", "pepsi", "orange soda"]
+  drink: ["sprite", "coke", "pepsi", "orange soda", "bottled unsweetened tea", "redbull"]
+  flavored drink: ["sprite", "orange soda", "bottled unsweetened tea"]
+  caffeinated drink: ["redbull"]
+  bottle drink: ["bottled unsweetened tea", "bottled water"]
+  beverage: ["sprite", "pepsi", "coke", "redbull", "bottled unsweetened tea"]

@@ -1,0 +1,5 @@
+LLM:
+  open_router_key: ${OPEN_ROUTER_KEY}
+  model_name: openai/gpt-4o-2024-11-20
+  short_name: gpt4o
+  router_config: null

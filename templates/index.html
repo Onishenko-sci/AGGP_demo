@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scene Graph Planner</title>
+  <style>
+    /* ─── Reset & Variables ──────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:          #0d1117;
+      --surface:     #161b22;
+      --surface-2:   #21262d;
+      --border:      #30363d;
+      --text:        #c9d1d9;
+      --text-muted:  #8b949e;
+      --accent:      #58a6ff;
+      --accent-bg:   #1f6feb;
+      --danger:      #f85149;
+      --danger-bg:   #da3633;
+      --success:     #3fb950;
+      --radius:      10px;
+      --radius-sm:   6px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                   Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Header ─────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .header-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+    .header .status-tag {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: var(--surface-2);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+    .header .status-tag.running {
+      background: rgba(31,111,235,0.15);
+      color: var(--accent);
+    }
+
+    /* ─── Main Layout ────────────────────────────────── */
+    .main {
+      display: flex;
+      height: calc(100vh - 50px);
+    }
+
+    /* ─── Chat Panel ─────────────────────────────────── */
+    .chat-panel {
+      width: 500px;
+      min-width: 340px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    /* Messages */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    .msg { display: flex; }
+    .msg-user { justify-content: flex-end; }
+    .msg-agent { justify-content: flex-start; }
+
+    .bubble {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 13.5px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .bubble-user {
+      background: #1a3352;
+      border-right: 3px solid var(--accent);
+      border-radius: var(--radius) 2px 2px var(--radius);
+    }
+    .bubble-agent {
+      background: var(--surface-2);
+      border-radius: var(--radius) var(--radius) var(--radius) 2px;
+    }
+
+    /* Input area */
+    .chat-input {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .input-row input {
+      flex: 1;
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 14px;
+      transition: border-color 0.15s;
+    }
+    .input-row input:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+    .input-row input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      padding: 0 22px;
+      background: var(--accent-bg);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: #2a7cf7; }
+    .btn-primary:active { transform: scale(0.97); }
+
+    .btn-primary.stop {
+      background: var(--danger-bg);
+    }
+    .btn-primary.stop:hover { background: #e34641; }
+
+    /* Secondary actions */
+    .actions {
+      padding: 8px 16px 14px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn-secondary {
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 12px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+
+    /* ─── Graph Panel ────────────────────────────────── */
+    .graph-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .graph-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      min-height: 0;
+    }
+    .graph-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .graph-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-nav {
+      width: 36px; height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 15px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-nav:hover {
+      border-color: var(--text-muted);
+      color: var(--text);
+    }
+    .counter {
+      font-size: 13px;
+      color: var(--text-muted);
+      min-width: 48px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Typing indicator ───────────────────────────── */
+    .typing-indicator {
+      display: none;
+      align-self: flex-start;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      border-radius: var(--radius) var(--radius) var(--radius) 2px;
+    }
+    .typing-indicator.visible { display: flex; }
+    .typing-indicator span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      margin: 0 2px;
+      animation: blink 1.2s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.3; }
+      40% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ────────────────────────────────────── -->
+  <div class="header">
+    <div class="header-dot"></div>
+    <h1>Scene Graph Planner</h1>
+    <div class="status-tag" id="statusTag">IDLE</div>
+  </div>
+
+  <!-- ── Main ──────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- Chat -->
+    <div class="chat-panel">
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg msg-agent">
+          <div class="bubble bubble-agent">How can I help you?</div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="chat-input">
+        <div class="input-row">
+          <input
+            type="text"
+            id="messageInput"
+            placeholder="Type your instruction..."
+            autocomplete="off"
+          />
+          <button class="btn-primary" id="sendBtn">Send</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" id="btnRandom">Random Task</button>
+        <button class="btn-secondary" id="btnReset">Reset</button>
+        <button class="btn-secondary" id="btnVH">VirtualHome</button>
+      </div>
+    </div>
+
+    <!-- Graph -->
+    <div class="graph-panel">
+      <div class="graph-container">
+        <img id="graphImage" src="/api/graph" alt="Scene Graph" />
+      </div>
+      <div class="graph-controls">
+        <button class="btn-nav" id="btnLeft">&#9664;</button>
+        <div class="counter" id="graphCounter">1 / 1</div>
+        <button class="btn-nav" id="btnRight">&#9654;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Script ────────────────────────────────────── -->
+  <script>
+    // ─── DOM refs ────────────────────────────────────
+    const chatMessages    = document.getElementById('chatMessages');
+    const messageInput    = document.getElementById('messageInput');
+    const sendBtn         = document.getElementById('sendBtn');
+    const statusTag       = document.getElementById('statusTag');
+    const graphImage      = document.getElementById('graphImage');
+    const graphCounter    = document.getElementById('graphCounter');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    // ─── State ───────────────────────────────────────
+    let isRunning = false;
+    let currentController = null;
+
+    // ─── Chat helpers ────────────────────────────────
+    function addMessage(role, text) {
+      hideTyping();
+      const wrapper = document.createElement('div');
+      wrapper.className = `msg msg-${role === 'user' ? 'user' : 'agent'}`;
+      const bubble = document.createElement('div');
+      bubble.className = `bubble bubble-${role === 'user' ? 'user' : 'agent'}`;
+      bubble.textContent = text;
+      wrapper.appendChild(bubble);
+      chatMessages.appendChild(wrapper);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function clearChat() {
+      chatMessages.innerHTML = '';
+    }
+
+    function showTyping() {
+      typingIndicator.classList.add('visible');
+      // Ensure indicator is always at the bottom of chat
+      chatMessages.appendChild(typingIndicator);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function hideTyping() {
+      typingIndicator.classList.remove('visible');
+    }
+
+    // ─── Button toggle ──────────────────────────────
+    function setRunning(running) {
+      isRunning = running;
+      if (running) {
+        sendBtn.textContent = 'Stop';
+        sendBtn.classList.add('stop');
+        statusTag.textContent = 'RUNNING';
+        statusTag.classList.add('running');
+      } else {
+        sendBtn.textContent = 'Send';
+        sendBtn.classList.remove('stop');
+      }
+    }
+
+    function setStatus(state) {
+      const labels = {
+        idle:                      'IDLE',
+        running:                   'RUNNING',
+        stopped:                   'STOPPED',
+        awaiting_clarification:    'AWAITING INPUT',
+        completed:                 'COMPLETED',
+        resolvable_check:          'RESOLVABLE CHECK',
+        ambiguity_check:           'AMBIGUITY CHECK',
+      };
+      statusTag.textContent = labels[state] || state.toUpperCase();
+      statusTag.classList.remove('running', 'checking');
+      if (state === 'running') {
+        statusTag.classList.add('running');
+      } else if (state === 'resolvable_check' || state === 'ambiguity_check') {
+        statusTag.classList.add('running');
+      }
+      const activeStates = ['running', 'resolvable_check', 'ambiguity_check'];
+      if (!activeStates.includes(state)) {
+        setRunning(false);
+      }
+    }
+
+    // ─── Graph helpers ──────────────────────────────
+    function refreshGraph() {
+      graphImage.src = '/api/graph?t=' + Date.now();
+    }
+
+    // ─── Send / Stop ────────────────────────────────
+    sendBtn.addEventListener('click', handleSendStop);
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSendStop();
+      }
+    });
+
+    async function handleSendStop() {
+      if (isRunning) {
+        await stopPlanning();
+      } else {
+        await sendMessage();
+      }
+    }
+
+    async function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text) return;
+
+      messageInput.value = '';
+      addMessage('user', text);
+      setRunning(true);
+      showTyping();
+
+      currentController = new AbortController();
+
+      try {
+        const response = await fetch('/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text }),
+          signal: currentController.signal,
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                handleEvent(JSON.parse(line.slice(6)));
+              } catch (_) { /* ignore parse errors */ }
+            }
+          }
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          console.error('Stream error:', e);
+        }
+      } finally {
+        hideTyping();
+        setRunning(false);
+        currentController = null;
+      }
+    }
+
+    async function stopPlanning() {
+      try {
+        await fetch('/api/stop', { method: 'POST' });
+      } catch (_) {}
+      if (currentController) currentController.abort();
+      hideTyping();
+      setRunning(false);
+      setStatus('stopped');
+    }
+
+    // ─── SSE event handler ──────────────────────────
+    function handleEvent(event) {
+      switch (event.type) {
+        case 'message':
+          addMessage('agent', event.text);
+          showTyping();
+          break;
+
+        case 'graph_updated':
+          refreshGraph();
+          graphCounter.textContent = event.index + ' / ' + event.total;
+          break;
+
+        case 'status':
+          setStatus(event.state);
+          break;
+
+        case 'error':
+          addMessage('agent', 'Error: ' + (event.text || 'Unknown error'));
+          break;
+      }
+    }
+
+    // ─── Graph navigation ───────────────────────────
+    document.getElementById('btnLeft').addEventListener('click', async () => {
+      const res = await fetch('/api/graph/left');
+      const data = await res.json();
+      graphCounter.textContent = data.counter.replace('/', ' / ');
+      refreshGraph();
+    });
+
+    document.getElementById('btnRight').addEventListener('click', async () => {
+      const res = await fetch('/api/graph/right');
+      const data = await res.json();
+      graphCounter.textContent = data.counter.replace('/', ' / ');
+      refreshGraph();
+    });
+
+    // ─── Secondary actions ──────────────────────────
+    document.getElementById('btnRandom').addEventListener('click', async () => {
+      const res = await fetch('/api/random-task');
+      const data = await res.json();
+      messageInput.value = data.task;
+      messageInput.focus();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', async () => {
+      await fetch('/api/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ env: 'simple' }),
+      });
+      clearChat();
+      addMessage('agent', 'Environment reset. How can I help?');
+      refreshGraph();
+      graphCounter.textContent = '1 / 1';
+      setStatus('idle');
+    });
+
+    document.getElementById('btnVH').addEventListener('click', async () => {
+      await fetch('/api/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ env: 'vh' }),
+      });
+      clearChat();
+      addMessage('agent', 'VirtualHome environment loaded. How can I help?');
+      refreshGraph();
+      graphCounter.textContent = '1 / 1';
+      setStatus('idle');
+    });
+
+    // ─── Initial load ───────────────────────────────
+    messageInput.focus();
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+# Semantic Valency Conflict (SVC) Disambiguation Pipeline
+
+This project implements a pipeline for detecting and resolving linguistic ambiguities in natural language instructions for robots. The method is based on predicate-argument analysis combined with environmental context modeling.
+
+## Overview
+
+The pipeline performs the following main steps:
+
+- Detects ambiguities in instructions using predicate-argument structures.
+- Extracts and verifies argument variants with respect to the given environment.
+- Activates cognitive frames and detects semantic conflicts.
+- Produces evaluation metrics including ambiguity detection accuracy and intent alignment scores.
+
+## Project Contents
+
+- `SVC.py` — main script to run the pipeline on datasets.
+- `llm.py` — module for interfacing with different language models (local or API-based).
+- `prompts/` — directory with prompt templates used for LLM queries.
+- `config.yaml` — configuration file for settings.
+- `llm_configs` — configuration file specifying model parameters.
+- `requirements.txt` — list of Python dependencies.
+- `data/` — input datasets.
+
+## Installation Instructions
+
+1. Create and activate a new conda environment:
+
+```
+   conda create -n svc_env python=3.10 -y
+   conda activate svc_env
+```
+2. Install required Python packages:
+```
+   pip install -r requirements.txt
+```
+3. Download additional required resources:
+```
+   python -m spacy download en_core_web_trf
+```
+## Usage
+
+To execute the pipeline on a subset of the input dataset, run:
+```
+   python SVC.py
+```
+
+

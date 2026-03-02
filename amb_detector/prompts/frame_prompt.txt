@@ -1,0 +1,43 @@
+Lexeme: {{lemma}}  
+Variants: {{variants}}  
+Environment: {{environment}}
+
+Task:  
+Analyze each variant of the lexeme '{{lemma}}' in the given environment and identify the cognitive frame it activates.
+
+For each variant:  
+- Identify the cognitive frame it activates.  
+- List the expected semantic roles (valency) for that frame.
+
+Important:  
+If the only differences between variants are minor attributes like color, material, or size, and these do not affect the core function or role of the object in the environment, then all variants should activate the same cognitive frame and share the same valency.
+
+Only distinguish frames if the environment suggests clearly different roles or functions for the variants.
+
+Each output block must include:  
+1. The variant  
+2. The name of the activated frame (e.g., "Drinkware_Container")  
+3. A list of semantic roles (e.g., container, liquid, function)
+
+**CRUCIAL:**  
+- Output one variant per block, starting with a dash and a space (`- variant_name:`).  
+- Never list multiple variants in the same block or line (no commas in variant names).  
+- Separate blocks clearly with a blank line.  
+
+Example:
+
+Lexeme: soda  
+Variants: coke, pepsi, orange soda  
+Environment: coke, pepsi, orange soda, bottled water
+
+- coke:  
+    frame: Flavored_Soft_Drink  
+    valency: beverage, brand, carbonation  
+
+- pepsi:  
+    frame: Flavored_Soft_Drink  
+    valency: beverage, brand, carbonation  
+
+- orange soda:  
+    frame: Citrus_Drink  
+    valency: beverage, fruit_flavor, carbonation

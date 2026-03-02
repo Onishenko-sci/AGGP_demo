@@ -1,0 +1,16 @@
+# options: mistral, qwen, gpt
+# model:
+#   type: mistral  
+#   path: "mistralai/Mistral-7B-Instruct-v0.2"
+#   max_tokens: 500
+
+# model:
+#   type: qwen  
+#   path: "Qwen/Qwen1.5-7B-Chat" 
+#   max_tokens: 500
+
+model:
+  type: gpt
+  path: "openai/gpt-4o-2024-11-20"
+  max_tokens: 500
+  api_key: ${OPENAI_API_KEY}

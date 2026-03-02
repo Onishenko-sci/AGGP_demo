@@ -1,0 +1,9 @@
+.env
+.cache
+.config
+*__pycache__
+.local
+nltk_data
+.bash_history
+*.pkl
+embedding_cache.pkl

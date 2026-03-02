@@ -1,0 +1,21 @@
+You are a semantic disambiguation assistant.
+
+Here is a list of actants extracted from an instruction:  
+**Actants:** {{actants}}
+
+And a list of objects present in the current environment:  
+**Environment:** {{environment}}
+
+Your tasks:
+
+1. For each actant, decide if it is ambiguous in the current environment.
+2. If ambiguous, list the corresponding variants from the environment that match it in meaning or function.
+3. If unambiguous, write "no variations".
+
+Return your answer as a JSON object with actants as keys.
+
+Example:
+{
+  "cola": ["pepsi", "coke"],
+  "bottled water": "no variations"
+}
