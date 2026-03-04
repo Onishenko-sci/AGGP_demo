@@ -3,11 +3,9 @@
 Interactive demonstration system for the paper **"Ambiguity-Aware Task Planning over Scene Graphs for Embodied Agents"**.
 
 <div align="center">
-
-[<img src="assets/interface.png" width="600" alt="Demo video">](assets/Demo_short.mp4)
-
-*Video demo for Ambiguity-Guided Graph Planning*
-
+  <video src="assets/Demo_short.mp4" controls width="600"></video>
+  <br>
+  <em>Video demo for Ambiguity-Guided Graph Planning</em>
 </div>
 
 AGGP integrates two modules for executing natural language instructions in household environments:
