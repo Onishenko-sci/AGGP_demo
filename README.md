@@ -2,6 +2,14 @@
 
 Interactive demonstration system for the paper **"Ambiguity-Aware Task Planning over Scene Graphs for Embodied Agents"**.
 
+<div align="center">
+
+[<img src="assets/interface.png" width="600" alt="Demo video">](assets/Demo_short.mp4)
+
+*Video demo for Ambiguity-Guided Graph Planning*
+
+</div>
+
 AGGP integrates two modules for executing natural language instructions in household environments:
 
 - **Ambiguity Detector** -- identifies referential and predicative ambiguity in an instruction by analysing predicate-argument structures against the current environment state. When ambiguity is detected, the system generates a targeted clarifying question and refines the instruction before planning.
@@ -42,6 +50,18 @@ Open [http://localhost:7860](http://localhost:7860) in your browser.
 
 ## How It Works
 
+<div align="center">
+<img src="assets/algorithm.jpg" width="500" alt="Algorithm scheme">
+</div>
+
+The system operates in two stages:
+
+**Instruction processing** -- the incoming instruction is checked for resolvability (capability check), then actants are extracted and matched against the scene graph. If referential or predicative conflicts are detected, a clarifying question is generated and sent back to the user via the chat interface.
+
+**Action sequencing** -- once the instruction is unambiguous, the planner builds a prompt from the current scene graph, generates an action, and validates it. If the action is incorrect, feedback is created and the planner retries. Exploration actions trigger graph augmentation (discovering new objects). The loop continues until a terminal action is reached.
+
+### Step by step
+
 1. **User sends an instruction** (e.g. "Put a cup on the dining table")
 2. **Capability check** -- LLM verifies the task is within the robot's action set (go_to, pick_up, open, close, put_on, put_inside, turn_on, turn_off)
 3. **Ambiguity detection** -- NLP pipeline checks whether the instruction is referentially ambiguous (e.g. multiple cups in the scene). If so, the agent asks a clarifying question
@@ -49,6 +69,11 @@ Open [http://localhost:7860](http://localhost:7860) in your browser.
 5. **Visualization** -- the updated scene graph is rendered and displayed in the web UI
 
 Users can stop planning at any point, provide corrections, and switch between environments (simple demo scene or VirtualHome).
+
+<div align="center">
+<img src="assets/output.png" width="600" alt="Scene graph example">
+<br><em>Example scene graph for the demo environment</em>
+</div>
 
 ## Project Structure
 
