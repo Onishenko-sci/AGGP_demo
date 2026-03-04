@@ -4,7 +4,7 @@ Interactive demonstration system for the paper **"Ambiguity-Aware Task Planning 
 
 <div align="center">
 
-<video controls src="https://github.com/user/repo/raw/main/assets/Demo_short.mp4"></video>
+https://github.com/user-attachments/assets/90618cba-07c1-4c40-a4d5-6cbe2a2adda7
 
 *Video demo for Ambiguity-Guided Graph Planning*
 
