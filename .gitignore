@@ -5,5 +5,4 @@
 .local
 nltk_data
 .bash_history
-*.pkl
 embedding_cache.pkl
